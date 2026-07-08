@@ -41,18 +41,20 @@ http://localhost:5173
 
 正式 AI 服务不要在前端直接调用。建议把 API Key 放在 Vercel 环境变量里，再通过 `/api/*` 服务端接口转发。
 
-建议环境变量：
+火山方舟推荐环境变量：
 
 ```text
-WRITING_API_BASE_URL=
-WRITING_API_KEY=
+ARK_API_KEY=
+ARK_MODEL=
+ARK_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
 ```
 
-后续接口建议：
+其中 `ARK_MODEL` 通常填写火山方舟控制台里的推理接入点 ID 或模型调用名，以控制台显示为准。
+
+当前已接入的统一接口：
 
 ```text
-/api/analyze-style
-/api/generate-trials
-/api/generate-plan
-/api/generate-article
+/api/generate
 ```
+
+前端会优先调用 `/api/generate`。如果环境变量还没配置，页面会自动回退到本地 Demo 内容，保证产品可以继续体验。

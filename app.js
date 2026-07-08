@@ -3,6 +3,8 @@ const state = {
   sampleCount: 0,
   chosenMode: "",
   profileSaved: false,
+  styleProfile: null,
+  trials: null,
   plan: "",
   article: "",
 };
@@ -49,6 +51,19 @@ function setStatus(text) {
   $("#statusText").textContent = text;
 }
 
+async function callWritingApi(payload) {
+  const response = await fetch("/api/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.ok) {
+    throw new Error(result.error || "API request failed");
+  }
+  return result.data;
+}
+
 function switchPanel(id) {
   $$(".panel").forEach((panel) => panel.classList.toggle("is-active", panel.id === id));
   $$(".rail-item").forEach((item) => item.classList.toggle("is-active", item.dataset.target === id));
@@ -73,8 +88,9 @@ function updateSampleCounter() {
 
 function renderTrials() {
   const grid = $("#trialGrid");
+  const trials = state.trials || trialCopies;
   grid.innerHTML = "";
-  Object.entries(trialCopies).forEach(([key, trial]) => {
+  Object.entries(trials).forEach(([key, trial]) => {
     const card = document.createElement("article");
     card.className = "trial-card";
     card.setAttribute("role", "listitem");
@@ -107,34 +123,51 @@ function selectMode(mode) {
 
   $("#selectedMode").textContent = modeText;
   $("#personaText").value =
+    state.styleProfile?.persona ||
     "你的文章更像判断型随笔：先提出一个看似普通的问题，再往后拆出一个更底层的判断。语气克制，不追求高密度金句，喜欢用“本质上”“这里有个误区”推进论证。";
   $("#structureText").value =
+    state.styleProfile?.structure ||
     "适合使用编号结构：先给出核心判断，再拆成 3-5 个层次，每节都用一个具体例子或现实成本支撑，结尾轻收束，不喊口号。";
-  $("#upgradeText").value =
+  $("#upgradeText").value = state.styleProfile?.upgrade || (
     mode === "A"
       ? "保留原表达的自然感，少做外显包装，只在段落收束和案例支撑上增强。"
       : mode === "B"
       ? "保留原风格影子，同时强化结构、段落节奏和公众号阅读体验。"
-      : "保留克制气质，但标题、开头和核心判断可以更有张力。";
+      : "保留克制气质，但标题、开头和核心判断可以更有张力。"
+  );
   setStatus(`已选择 ${modeText}`);
   switchPanel("panel-profile");
 }
 
-function analyzeSamples() {
+async function analyzeSamples() {
   updateSampleCounter();
   if (state.sampleCount < 3) {
     $("#sampleHelp").textContent = "至少需要 3 篇样本文章。可以先点“填入示例”体验完整流程。";
     $("#sampleHelp").style.color = "var(--color-state-error)";
     return;
   }
-  $("#sampleHelp").textContent = "已完成初步分析。写作猫先试写三段，你选一个方向。";
+  setStatus("正在分析风格并生成试写样例");
+  try {
+    const data = await callWritingApi({
+      task: "generate-trials",
+      samples: state.samples,
+      sampleCount: state.sampleCount,
+    });
+    if (data.trials) state.trials = data.trials;
+    if (data.profile) state.styleProfile = data.profile;
+    $("#sampleHelp").textContent = "已完成风格分析。写作猫先试写三段，你选一个方向。";
+  } catch {
+    state.trials = trialCopies;
+    state.styleProfile = null;
+    $("#sampleHelp").textContent = "API 暂未配置，已使用本地示例继续体验完整流程。";
+  }
   $("#sampleHelp").style.color = "var(--color-text-secondary)";
   renderTrials();
   setStatus("已生成三段风格试写样例");
   switchPanel("panel-trials");
 }
 
-function generatePlan() {
+async function generatePlan() {
   const topic = $("#topicInput").value.trim();
   if (!topic) {
     setStatus("请先输入主题或材料");
@@ -148,6 +181,30 @@ function generatePlan() {
       : mode === "C"
       ? "开头和标题更有抓力，但避免营销号。"
       : "整体偏清晰增强，像你，但更顺。";
+  setStatus("正在生成写作方案");
+  try {
+    const data = await callWritingApi({
+      task: "generate-plan",
+      samples: state.samples,
+      sampleCount: state.sampleCount,
+      mode,
+      styleProfile: {
+        persona: $("#personaText").value.trim(),
+        structure: $("#structureText").value.trim(),
+        upgrade: $("#upgradeText").value.trim(),
+      },
+      topic,
+    });
+    if (data.text) {
+      state.plan = data.text;
+      $("#planCard").textContent = state.plan;
+      setStatus("写作方案已生成，确认后可以出稿");
+      switchPanel("panel-plan");
+      return;
+    }
+  } catch {
+    setStatus("API 暂未配置，已使用本地示例生成方案");
+  }
   state.plan = `核心判断：
 这篇不写成资料汇总，而写成一个判断：机会仍然存在，但粗糙红利过去了，真正的机会来自更大的视频媒介迁移、更精准的人群服务和 AI 降低生产门槛。
 
@@ -171,12 +228,37 @@ ${styleLine}
   switchPanel("panel-plan");
 }
 
-function generateArticle() {
+async function generateArticle() {
   if (!state.plan) {
-    generatePlan();
+    await generatePlan();
     return;
   }
   const persona = $("#personaText").value.trim() || "判断型随笔";
+  setStatus("正在生成文章");
+  try {
+    const data = await callWritingApi({
+      task: "generate-article",
+      samples: state.samples,
+      sampleCount: state.sampleCount,
+      mode: state.chosenMode || "B",
+      styleProfile: {
+        persona: $("#personaText").value.trim(),
+        structure: $("#structureText").value.trim(),
+        upgrade: $("#upgradeText").value.trim(),
+      },
+      topic: $("#topicInput").value.trim(),
+      plan: state.plan,
+    });
+    if (data.text) {
+      state.article = data.text;
+      $("#articleOutput").value = state.article;
+      setStatus("文章已生成，可以继续微调");
+      switchPanel("panel-article");
+      return;
+    }
+  } catch {
+    setStatus("API 暂未配置，已使用本地示例生成文章");
+  }
   state.article = `# 出海做视频还有机会吗？
 
 当然还有。
