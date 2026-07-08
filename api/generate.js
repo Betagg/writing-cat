@@ -63,6 +63,13 @@ module.exports = async function handler(request, response) {
     });
   }
 
+  if (!/^[\x20-\x7E]+$/.test(apiKey)) {
+    return send(response, 503, {
+      ok: false,
+      error: "ARK_API_KEY must be the raw API key, not explanatory text",
+    });
+  }
+
   const body = request.body || {};
   const task = body.task;
   const prompt = taskPrompts[task];
