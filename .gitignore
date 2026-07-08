@@ -1,4 +1,7 @@
 .DS_Store
 node_modules/
+public/
 .vercel/
 *.log
+.vercel
+.env*
