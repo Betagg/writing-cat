@@ -43,12 +43,20 @@ function safeJson(text) {
   }
 }
 
+function normalizeApiKey(value) {
+  const text = String(value || "").trim();
+  const fromAssignment = text.includes("=") ? text.split("=").slice(1).join("=").trim() : text;
+  const unquoted = fromAssignment.replace(/^['"]|['"]$/g, "").trim();
+  const token = unquoted.match(/[A-Za-z0-9._-]{24,}/)?.[0] || "";
+  return token;
+}
+
 module.exports = async function handler(request, response) {
   if (request.method !== "POST") {
     return send(response, 405, { ok: false, error: "Method not allowed" });
   }
 
-  const apiKey = process.env.ARK_API_KEY || process.env.WRITING_API_KEY;
+  const apiKey = normalizeApiKey(process.env.ARK_API_KEY || process.env.WRITING_API_KEY);
   const model = process.env.ARK_MODEL || process.env.WRITING_API_MODEL;
   const baseUrl = process.env.ARK_BASE_URL || process.env.WRITING_API_BASE_URL || DEFAULT_BASE_URL;
 
@@ -66,7 +74,7 @@ module.exports = async function handler(request, response) {
   if (!/^[\x20-\x7E]+$/.test(apiKey)) {
     return send(response, 503, {
       ok: false,
-      error: "ARK_API_KEY must be the raw API key, not explanatory text",
+      error: "ARK_API_KEY must contain the raw API key, not explanatory text",
     });
   }
 
