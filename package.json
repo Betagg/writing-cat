@@ -1,0 +1,11 @@
+{
+  "name": "writing-cat",
+  "version": "0.1.0",
+  "private": true,
+  "description": "写作猫：学习用户写作风格，并生成公众号文章的网页产品原型。",
+  "scripts": {
+    "dev": "python3 -m http.server 5173",
+    "build": "node -e \"console.log('Static site: no build step')\"",
+    "deploy": "vercel --prod"
+  }
+}

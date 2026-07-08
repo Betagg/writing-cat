@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>写作猫 - 像你，也更好</title>
+    <meta
+      name="description"
+      content="写作猫学习你的写作风格，先试写校准，再帮你生成更像你、也更好的公众号文章。"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="写作猫首页">
+        <img class="brand-mark" src="./assets/logo-cat.png" alt="" />
+        <span>写作猫</span>
+      </a>
+      <nav class="topnav" aria-label="主导航">
+        <a href="#workspace">开始</a>
+        <a href="#workflow">怎么用</a>
+        <a href="./docs/product-spec.md">产品文档</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">AI writing editor for WeChat creators</p>
+          <h1 id="hero-title">像你，也更好。</h1>
+          <p class="hero-lede">
+            写作猫先学习你的旧文章，再用三段试写校准风格，最后把新材料写成一篇有你影子的公众号文章。
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#workspace">开始校准风格</a>
+          </div>
+        </div>
+        <aside class="hero-note" aria-label="产品原则">
+          <img class="note-cat" src="./assets/logo-cat.png" alt="" />
+          <p>不替代作者，而是把作者最好的一面稳定发挥出来。</p>
+        </aside>
+      </section>
+
+      <section id="workspace" class="workspace" aria-labelledby="workspace-title">
+        <div class="workspace-header">
+          <div>
+            <p class="eyebrow">Prototype</p>
+            <h2 id="workspace-title">写作猫工作台</h2>
+          </div>
+          <p class="workspace-status" id="statusText" aria-live="polite">等待输入历史文章</p>
+        </div>
+
+        <div class="app-shell">
+          <aside class="rail" aria-label="写作流程">
+            <button class="rail-item is-active" data-target="panel-samples">
+              <span>1</span>历史文章
+            </button>
+            <button class="rail-item" data-target="panel-trials">
+              <span>2</span>试写校准
+            </button>
+            <button class="rail-item" data-target="panel-profile">
+              <span>3</span>风格画像
+            </button>
+            <button class="rail-item" data-target="panel-plan">
+              <span>4</span>写作方案
+            </button>
+            <button class="rail-item" data-target="panel-article">
+              <span>5</span>最终文章
+            </button>
+          </aside>
+
+          <div class="panels">
+            <section class="panel is-active" id="panel-samples" tabindex="0" aria-labelledby="samples-title">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Step 1</p>
+                  <h3 id="samples-title">先给写作猫看几篇你写过的东西</h3>
+                </div>
+                <span class="counter" id="sampleCounter">0 篇样本</span>
+              </div>
+              <label class="field-label" for="sampleInput">历史文章样本</label>
+              <textarea
+                id="sampleInput"
+                class="textarea tall"
+                placeholder="粘贴 3-10 篇历史文章。建议用空行、--- 或标题分隔不同文章。"
+              ></textarea>
+              <div class="panel-actions">
+                <button class="button button-primary" id="analyzeBtn">分析并试写</button>
+                <button class="button button-secondary" id="loadDemoBtn">填入示例</button>
+              </div>
+              <p class="helper" id="sampleHelp">
+                写作猫会先生成三个短样例，让你选择更像你想要的方向。
+              </p>
+            </section>
+
+            <section class="panel" id="panel-trials" tabindex="0" aria-labelledby="trials-title">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Step 2</p>
+                  <h3 id="trials-title">我试着用你的方式写了三小段</h3>
+                </div>
+                <button class="button button-secondary" id="regenTrialsBtn">重新试写</button>
+              </div>
+              <p class="helper">不用判断哪段“最好”，只要选哪段更接近你想要的方向。</p>
+              <div class="trial-grid" id="trialGrid" role="list"></div>
+            </section>
+
+            <section class="panel" id="panel-profile" tabindex="0" aria-labelledby="profile-title">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Step 3</p>
+                  <h3 id="profile-title">风格画像</h3>
+                </div>
+                <span class="counter" id="selectedMode">未选择方向</span>
+              </div>
+              <div class="profile-grid">
+                <label class="field-label">
+                  写作人格
+                  <textarea class="textarea compact" id="personaText"></textarea>
+                </label>
+                <label class="field-label">
+                  结构习惯
+                  <textarea class="textarea compact" id="structureText"></textarea>
+                </label>
+                <label class="field-label">
+                  质量提升方向
+                  <textarea class="textarea compact" id="upgradeText"></textarea>
+                </label>
+              </div>
+              <div class="panel-actions">
+                <button class="button button-primary" id="saveProfileBtn">保存这个风格</button>
+              </div>
+            </section>
+
+            <section class="panel" id="panel-plan" tabindex="0" aria-labelledby="plan-title">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Step 4</p>
+                  <h3 id="plan-title">给一个主题或材料，先生成写作方案</h3>
+                </div>
+              </div>
+              <label class="field-label" for="topicInput">主题 / 材料</label>
+              <textarea
+                id="topicInput"
+                class="textarea medium"
+                placeholder="例如：根据这些内容写一篇《出海做视频还有机会吗？》，面向想做内容赚钱成名的人。"
+              ></textarea>
+              <div class="panel-actions">
+                <button class="button button-primary" id="planBtn">生成写作方案</button>
+              </div>
+              <article class="plan-card" id="planCard" aria-live="polite"></article>
+            </section>
+
+            <section class="panel" id="panel-article" tabindex="0" aria-labelledby="article-title">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Step 5</p>
+                  <h3 id="article-title">生成文章并继续编辑</h3>
+                </div>
+                <button class="button button-primary" id="articleBtn">生成文章</button>
+              </div>
+              <div class="edit-groups">
+                <div>
+                  <p class="mini-title">更像我</p>
+                  <button class="chip" data-rewrite="less-ai">少一点 AI 味</button>
+                  <button class="chip" data-rewrite="calmer">结尾更克制</button>
+                  <button class="chip" data-rewrite="judgment">多一点个人判断</button>
+                </div>
+                <div>
+                  <p class="mini-title">写得更好</p>
+                  <button class="chip" data-rewrite="title">标题更强</button>
+                  <button class="chip" data-rewrite="structure">结构更清楚</button>
+                  <button class="chip" data-rewrite="shorten">压缩篇幅</button>
+                </div>
+              </div>
+              <textarea class="article-editor" id="articleOutput" placeholder="确认写作方案后，文章会出现在这里。"></textarea>
+              <div class="panel-actions">
+                <button class="button button-secondary" id="copyMdBtn">复制 Markdown</button>
+                <button class="button button-secondary" id="copyTextBtn">复制纯文本</button>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section id="workflow" class="workflow" aria-labelledby="workflow-title">
+        <div class="section-heading">
+          <p class="eyebrow">How it works</p>
+          <h2 id="workflow-title">四步完成一篇有你影子的文章。</h2>
+        </div>
+        <div class="steps">
+          <article>
+            <span>01</span>
+            <h3>输入历史文章</h3>
+            <p>粘贴 3-10 篇旧文章。</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>试写校准</h3>
+            <p>从三段样例里选一个方向。</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>确认风格画像</h3>
+            <p>保留你的表达习惯。</p>
+          </article>
+          <article>
+            <span>04</span>
+            <h3>先出方案再写稿</h3>
+            <p>确认结构后生成文章。</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>写作猫</span>
+      <span>像你，也更好。</span>
+    </footer>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
