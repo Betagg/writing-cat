@@ -51,6 +51,15 @@ function setStatus(text) {
   $("#statusText").textContent = text;
 }
 
+function setWriterProgress(isActive, label = "写作猫正在写") {
+  const progress = $("#writerProgress");
+  const progressLabel = $("#writerProgressLabel");
+  if (!progress || !progressLabel) return;
+  progressLabel.textContent = label;
+  progress.classList.toggle("is-active", isActive);
+  progress.setAttribute("aria-hidden", isActive ? "false" : "true");
+}
+
 async function callWritingApi(payload) {
   const response = await fetch("/api/generate", {
     method: "POST",
@@ -147,6 +156,7 @@ async function analyzeSamples() {
     return;
   }
   setStatus("正在分析风格并生成试写样例");
+  setWriterProgress(true, "写作猫正在拆你的风格");
   try {
     const data = await callWritingApi({
       task: "generate-trials",
@@ -160,6 +170,8 @@ async function analyzeSamples() {
     state.trials = trialCopies;
     state.styleProfile = null;
     $("#sampleHelp").textContent = "API 暂未配置，已使用本地示例继续体验完整流程。";
+  } finally {
+    setWriterProgress(false);
   }
   $("#sampleHelp").style.color = "var(--color-text-secondary)";
   renderTrials();
@@ -182,6 +194,7 @@ async function generatePlan() {
       ? "开头和标题更有抓力，但避免营销号。"
       : "整体偏清晰增强，像你，但更顺。";
   setStatus("正在生成写作方案");
+  setWriterProgress(true, "写作猫正在铺文章结构");
   try {
     const data = await callWritingApi({
       task: "generate-plan",
@@ -199,11 +212,14 @@ async function generatePlan() {
       state.plan = data.text;
       $("#planCard").textContent = state.plan;
       setStatus("写作方案已生成，确认后可以出稿");
+      setWriterProgress(false);
       switchPanel("panel-plan");
       return;
     }
   } catch {
     setStatus("API 暂未配置，已使用本地示例生成方案");
+  } finally {
+    setWriterProgress(false);
   }
   state.plan = `核心判断：
 这篇不写成资料汇总，而写成一个判断：机会仍然存在，但粗糙红利过去了，真正的机会来自更大的视频媒介迁移、更精准的人群服务和 AI 降低生产门槛。
@@ -235,6 +251,7 @@ async function generateArticle() {
   }
   const persona = $("#personaText").value.trim() || "判断型随笔";
   setStatus("正在生成文章");
+  setWriterProgress(true, "写作猫正在写正文");
   try {
     const data = await callWritingApi({
       task: "generate-article",
@@ -253,11 +270,14 @@ async function generateArticle() {
       state.article = data.text;
       $("#articleOutput").value = state.article;
       setStatus("文章已生成，可以继续微调");
+      setWriterProgress(false);
       switchPanel("panel-article");
       return;
     }
   } catch {
     setStatus("API 暂未配置，已使用本地示例生成文章");
+  } finally {
+    setWriterProgress(false);
   }
   state.article = `# 出海做视频还有机会吗？
 

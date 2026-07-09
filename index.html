@@ -47,7 +47,31 @@
             <p class="eyebrow">Prototype</p>
             <h2 id="workspace-title">写作猫工作台</h2>
           </div>
-          <p class="workspace-status" id="statusText" aria-live="polite">等待输入历史文章</p>
+          <div class="workspace-status-area">
+            <p class="workspace-status" id="statusText" aria-live="polite">等待输入历史文章</p>
+            <div class="writer-progress" id="writerProgress" aria-hidden="true">
+              <div class="writer-progress-copy">
+                <span id="writerProgressLabel">写作猫正在写</span>
+                <span class="writer-progress-dots" aria-hidden="true">
+                  <i></i><i></i><i></i>
+                </span>
+              </div>
+              <div class="cat-writing" aria-hidden="true">
+                <div class="cat-paper">
+                  <span class="paper-line line-1"></span>
+                  <span class="paper-line line-2"></span>
+                  <span class="paper-line line-3"></span>
+                  <span class="paper-line line-4"></span>
+                </div>
+                <div class="cat-paw">
+                  <span class="paw-pad"></span>
+                  <span class="paw-claw claw-1"></span>
+                  <span class="paw-claw claw-2"></span>
+                  <span class="paw-claw claw-3"></span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="app-shell">

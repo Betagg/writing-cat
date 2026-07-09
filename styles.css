@@ -315,10 +315,203 @@ h3 {
   margin-bottom: var(--space-7);
 }
 
-.workspace-status {
+.workspace-status-area {
   align-self: end;
+  display: grid;
+  justify-items: end;
+  gap: var(--space-2);
+  width: min(360px, 42%);
+}
+
+.workspace-status {
   margin: 0;
   color: var(--color-text-secondary);
+  text-align: right;
+}
+
+.writer-progress {
+  width: 100%;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: max-height var(--motion-duration-instant), opacity var(--motion-duration-instant),
+    transform var(--motion-duration-instant);
+}
+
+.writer-progress.is-active {
+  max-height: 112px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.writer-progress-copy {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.writer-progress-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.writer-progress-dots i {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: dotPulse 1.2s ease-in-out infinite;
+}
+
+.writer-progress-dots i:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.writer-progress-dots i:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+.cat-writing {
+  position: relative;
+  height: 58px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-subtle);
+}
+
+.cat-paper {
+  position: absolute;
+  inset: 12px 18px 12px 56px;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+}
+
+.paper-line {
+  display: block;
+  height: 2px;
+  width: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-text-primary);
+  transform-origin: left center;
+  animation: writeLine 3.2s ease-in-out infinite;
+}
+
+.line-1 {
+  max-width: 82%;
+}
+
+.line-2 {
+  max-width: 64%;
+  animation-delay: 0.35s;
+}
+
+.line-3 {
+  max-width: 74%;
+  animation-delay: 0.7s;
+}
+
+.line-4 {
+  max-width: 48%;
+  animation-delay: 1.05s;
+}
+
+.cat-paw {
+  position: absolute;
+  left: 20px;
+  top: 16px;
+  width: 26px;
+  height: 24px;
+  border: 2px solid var(--color-border-strong);
+  border-radius: 14px 14px 10px 10px;
+  background: var(--color-surface-base);
+  transform: rotate(-10deg);
+  animation: pawWrite 1.05s ease-in-out infinite;
+}
+
+.paw-pad {
+  position: absolute;
+  left: 9px;
+  bottom: 5px;
+  width: 8px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-border-strong);
+}
+
+.paw-claw {
+  position: absolute;
+  top: 4px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-border-strong);
+}
+
+.claw-1 {
+  left: 5px;
+}
+
+.claw-2 {
+  left: 11px;
+  top: 2px;
+}
+
+.claw-3 {
+  right: 5px;
+}
+
+@keyframes writeLine {
+  0%,
+  18% {
+    width: 0;
+    opacity: 0.2;
+  }
+
+  52%,
+  82% {
+    width: var(--line-width, 100%);
+    opacity: 1;
+  }
+
+  100% {
+    width: var(--line-width, 100%);
+    opacity: 0.35;
+  }
+}
+
+@keyframes pawWrite {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(-10deg);
+  }
+
+  40% {
+    transform: translate(12px, 3px) rotate(4deg);
+  }
+
+  70% {
+    transform: translate(26px, -1px) rotate(-4deg);
+  }
+}
+
+@keyframes dotPulse {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
 }
 
 .app-shell {
@@ -592,6 +785,19 @@ h3 {
   .rail-item {
     flex: 0 0 auto;
   }
+
+  .workspace-header {
+    display: grid;
+  }
+
+  .workspace-status-area {
+    justify-items: start;
+    width: 100%;
+  }
+
+  .workspace-status {
+    text-align: left;
+  }
 }
 
 @media (max-width: 640px) {
@@ -620,5 +826,37 @@ h3 {
 
   h1 {
     font-size: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .writer-progress,
+  .writer-progress.is-active,
+  .paper-line,
+  .cat-paw,
+  .writer-progress-dots i {
+    animation: none;
+    transition: none;
+  }
+
+  .writer-progress.is-active {
+    transform: none;
+  }
+
+  .paper-line {
+    width: 72%;
+    opacity: 0.6;
+  }
+
+  .line-2 {
+    width: 56%;
+  }
+
+  .line-3 {
+    width: 64%;
+  }
+
+  .line-4 {
+    width: 42%;
   }
 }
