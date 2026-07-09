@@ -337,6 +337,17 @@ motion.duration.instant = 300ms
 - Empty state must clearly tell user下一步做什么。
 - Loading state must prevent duplicate generation.
 
+### Completion Feedback
+
+任务完成后，写作猫 should 给出轻量提示，降低用户等待后的不确定感。
+
+**Rules：**
+
+- AI 任务完成 must 更新文字状态。
+- AI 任务完成 should 播放一次短提示音。
+- 提示音 must 只在用户发生过点击或键盘交互后播放，避免违反浏览器自动播放策略。
+- 提示音 must 不阻塞文章生成、复制或编辑流程；如果浏览器拦截播放，功能 should 安静失败。
+
 ## 6. Accessibility Requirements
 
 - Product must meet WCAG 2.2 AA.

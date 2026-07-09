@@ -13,6 +13,7 @@ const state = {
 
 const STYLE_LIBRARY_KEY = "writing-cat-style-library";
 const ACTIVE_STYLE_KEY = "writing-cat-active-style";
+let soundPrimed = false;
 
 const demoSamples = `Coding 的本质不是写代码，而是人在数字世界中的创造活动。Coding agent 这个词可能迷惑了很多人，它让人觉得这只是帮人类写代码的工具，但实际上，它更像是一个通用创造工具。
 
@@ -71,6 +72,36 @@ function setButtonPending(button, isPending, pendingText) {
   button.disabled = isPending;
   button.textContent = isPending ? pendingText : button.dataset.idleText;
   button.setAttribute("aria-busy", isPending ? "true" : "false");
+}
+
+function getTaskCompleteSound() {
+  return $("#taskCompleteSound");
+}
+
+function primeTaskCompleteSound() {
+  const sound = getTaskCompleteSound();
+  if (!sound || soundPrimed) return;
+  sound.volume = 0.82;
+  soundPrimed = true;
+  sound.muted = true;
+  sound
+    .play()
+    .then(() => {
+      sound.pause();
+      sound.currentTime = 0;
+      sound.muted = false;
+    })
+    .catch(() => {
+      sound.muted = false;
+      sound.load();
+    });
+}
+
+function playTaskCompleteSound() {
+  const sound = getTaskCompleteSound();
+  if (!sound) return;
+  sound.currentTime = 0;
+  sound.play().catch(() => {});
 }
 
 function createStyleId() {
@@ -206,6 +237,7 @@ function saveCurrentStyle() {
   persistStyleLibrary();
   renderStyleLibrary();
   setStatus(`已保存「${style.name}」，以后可以直接给主题`);
+  playTaskCompleteSound();
   switchPanel("panel-plan");
 }
 
@@ -352,6 +384,7 @@ async function analyzeSamples() {
   $("#sampleHelp").style.color = "var(--color-text-secondary)";
   renderTrials();
   setStatus("已生成三段风格试写样例");
+  playTaskCompleteSound();
   switchPanel("panel-trials");
 }
 
@@ -394,6 +427,7 @@ async function generatePlan() {
       $("#planCard").textContent = state.plan;
       setStatus("写作方案已生成，确认后可以出稿");
       setWriterProgress(false);
+      playTaskCompleteSound();
       switchPanel("panel-plan");
       return;
     }
@@ -423,6 +457,7 @@ ${styleLine}
 1500-2000 字。`;
   $("#planCard").textContent = state.plan;
   setStatus("写作方案已生成，确认后可以出稿");
+  playTaskCompleteSound();
   switchPanel("panel-plan");
 }
 
@@ -458,6 +493,7 @@ async function generateArticle() {
       $("#articleOutput").value = state.article;
       setStatus("文章已生成，可以继续微调");
       setWriterProgress(false);
+      playTaskCompleteSound();
       switchPanel("panel-article");
       return;
     }
@@ -530,6 +566,7 @@ YouTube 和 TikTok 的规则都在收紧。纯 AI 生成、缺少人工创意介
 <!-- 风格依据：${persona} -->`;
   $("#articleOutput").value = state.article;
   setStatus("文章已生成，可以继续微调");
+  playTaskCompleteSound();
   switchPanel("panel-article");
 }
 
@@ -566,6 +603,8 @@ async function copyText(markdown = true) {
   }
 }
 
+document.addEventListener("pointerdown", primeTaskCompleteSound, { once: true });
+document.addEventListener("keydown", primeTaskCompleteSound, { once: true });
 $("#sampleInput").addEventListener("input", updateSampleCounter);
 $("#analyzeBtn").addEventListener("click", analyzeSamples);
 $("#loadDemoBtn").addEventListener("click", () => {
