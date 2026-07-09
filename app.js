@@ -4,10 +4,15 @@ const state = {
   chosenMode: "",
   profileSaved: false,
   styleProfile: null,
+  styleLibrary: [],
+  activeStyleId: "",
   trials: null,
   plan: "",
   article: "",
 };
+
+const STYLE_LIBRARY_KEY = "writing-cat-style-library";
+const ACTIVE_STYLE_KEY = "writing-cat-active-style";
 
 const demoSamples = `Coding 的本质不是写代码，而是人在数字世界中的创造活动。Coding agent 这个词可能迷惑了很多人，它让人觉得这只是帮人类写代码的工具，但实际上，它更像是一个通用创造工具。
 
@@ -68,6 +73,163 @@ function setButtonPending(button, isPending, pendingText) {
   button.setAttribute("aria-busy", isPending ? "true" : "false");
 }
 
+function createStyleId() {
+  return `style-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function readStyleFields() {
+  return {
+    name: $("#profileNameInput").value.trim(),
+    persona: $("#personaText").value.trim(),
+    structure: $("#structureText").value.trim(),
+    upgrade: $("#upgradeText").value.trim(),
+  };
+}
+
+function getActiveStyle() {
+  return state.styleLibrary.find((style) => style.id === state.activeStyleId) || null;
+}
+
+function writeStyleFields(style = {}) {
+  $("#profileNameInput").value = style.name || "";
+  $("#personaText").value = style.persona || "";
+  $("#structureText").value = style.structure || "";
+  $("#upgradeText").value = style.upgrade || "";
+}
+
+function loadStyleLibrary() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STYLE_LIBRARY_KEY) || "[]");
+    state.styleLibrary = Array.isArray(saved)
+      ? saved.filter((style) => style && style.id && style.persona && style.structure && style.upgrade)
+      : [];
+    const savedActiveId = localStorage.getItem(ACTIVE_STYLE_KEY) || "";
+    state.activeStyleId = state.styleLibrary.some((style) => style.id === savedActiveId)
+      ? savedActiveId
+      : state.styleLibrary[0]?.id || "";
+  } catch {
+    state.styleLibrary = [];
+    state.activeStyleId = "";
+  }
+}
+
+function persistStyleLibrary() {
+  localStorage.setItem(STYLE_LIBRARY_KEY, JSON.stringify(state.styleLibrary));
+  if (state.activeStyleId) {
+    localStorage.setItem(ACTIVE_STYLE_KEY, state.activeStyleId);
+  } else {
+    localStorage.removeItem(ACTIVE_STYLE_KEY);
+  }
+}
+
+function renderStyleOptions(select, includeEmpty = true) {
+  if (!select) return;
+  select.innerHTML = includeEmpty ? '<option value="">未选择风格</option>' : "";
+  state.styleLibrary.forEach((style) => {
+    const option = document.createElement("option");
+    option.value = style.id;
+    option.textContent = style.name || "未命名风格";
+    select.appendChild(option);
+  });
+  select.value = state.activeStyleId || "";
+  select.disabled = state.styleLibrary.length === 0;
+}
+
+function updateStyleHint() {
+  const activeStyle = getActiveStyle();
+  $("#styleHint").textContent = activeStyle
+    ? `正在使用「${activeStyle.name || "未命名风格"}」。之后可以直接给主题，不必重新校准。`
+    : "首次使用需要先校准并保存一个风格。";
+}
+
+function renderStyleLibrary() {
+  $("#styleCount").textContent = `${state.styleLibrary.length} 个风格`;
+  renderStyleOptions($("#styleSelect"));
+  renderStyleOptions($("#planStyleSelect"));
+  $("#deleteStyleBtn").disabled = !state.activeStyleId;
+  $("#useStyleBtn").disabled = !state.activeStyleId;
+  updateStyleHint();
+}
+
+function selectStyle(styleId) {
+  if (!styleId) {
+    state.activeStyleId = "";
+    state.styleProfile = null;
+    writeStyleFields({});
+    renderStyleLibrary();
+    return;
+  }
+  const style = state.styleLibrary.find((item) => item.id === styleId);
+  if (!style) return;
+  state.activeStyleId = style.id;
+  state.styleProfile = {
+    persona: style.persona,
+    structure: style.structure,
+    upgrade: style.upgrade,
+  };
+  writeStyleFields(style);
+  persistStyleLibrary();
+  renderStyleLibrary();
+  setStatus(`已选择「${style.name || "未命名风格"}」`);
+}
+
+function saveCurrentStyle() {
+  const fields = readStyleFields();
+  if (!fields.persona || !fields.structure || !fields.upgrade) {
+    setStatus("请先补全风格画像");
+    return;
+  }
+  const now = new Date().toISOString();
+  const existing = getActiveStyle();
+  const style = {
+    id: existing?.id || createStyleId(),
+    name: fields.name || existing?.name || `我的写作风格 ${state.styleLibrary.length + 1}`,
+    persona: fields.persona,
+    structure: fields.structure,
+    upgrade: fields.upgrade,
+    mode: state.chosenMode || existing?.mode || "B",
+    updatedAt: now,
+    createdAt: existing?.createdAt || now,
+  };
+  if (existing) {
+    state.styleLibrary = state.styleLibrary.map((item) => (item.id === existing.id ? style : item));
+  } else {
+    state.styleLibrary = [style, ...state.styleLibrary];
+  }
+  state.activeStyleId = style.id;
+  state.styleProfile = {
+    persona: style.persona,
+    structure: style.structure,
+    upgrade: style.upgrade,
+  };
+  writeStyleFields(style);
+  persistStyleLibrary();
+  renderStyleLibrary();
+  setStatus(`已保存「${style.name}」，以后可以直接给主题`);
+  switchPanel("panel-plan");
+}
+
+function createBlankStyle() {
+  state.activeStyleId = "";
+  state.styleProfile = null;
+  state.chosenMode = "";
+  writeStyleFields({ name: `新的写作风格 ${state.styleLibrary.length + 1}` });
+  renderStyleLibrary();
+  setStatus("正在新建风格，可编辑后保存");
+}
+
+function deleteActiveStyle() {
+  const style = getActiveStyle();
+  if (!style) return;
+  state.styleLibrary = state.styleLibrary.filter((item) => item.id !== style.id);
+  state.activeStyleId = state.styleLibrary[0]?.id || "";
+  persistStyleLibrary();
+  const nextStyle = getActiveStyle();
+  writeStyleFields(nextStyle || {});
+  renderStyleLibrary();
+  setStatus("已删除当前风格");
+}
+
 async function callWritingApi(payload) {
   const response = await fetch("/api/generate", {
     method: "POST",
@@ -125,6 +287,7 @@ function renderTrials() {
 
 function selectMode(mode) {
   state.chosenMode = mode;
+  state.activeStyleId = "";
   $$(".trial-card").forEach((card) => {
     const button = card.querySelector("[data-mode]");
     const selected = button.dataset.mode === mode;
@@ -138,7 +301,7 @@ function selectMode(mode) {
     C: "传播增强版",
   }[mode];
 
-  $("#selectedMode").textContent = modeText;
+  $("#profileNameInput").value = modeText;
   $("#personaText").value =
     state.styleProfile?.persona ||
     "你的文章更像判断型随笔：先提出一个看似普通的问题，再往后拆出一个更底层的判断。语气克制，不追求高密度金句，喜欢用“本质上”“这里有个误区”推进论证。";
@@ -152,6 +315,7 @@ function selectMode(mode) {
       ? "保留原风格影子，同时强化结构、段落节奏和公众号阅读体验。"
       : "保留克制气质，但标题、开头和核心判断可以更有张力。"
   );
+  renderStyleLibrary();
   setStatus(`已选择 ${modeText}`);
   switchPanel("panel-profile");
 }
@@ -200,7 +364,9 @@ async function generatePlan() {
     $("#topicInput").focus();
     return;
   }
-  const mode = state.chosenMode || "B";
+  const activeStyle = getActiveStyle();
+  const mode = state.chosenMode || activeStyle?.mode || "B";
+  const styleProfile = activeStyle || readStyleFields();
   const styleLine =
     mode === "A"
       ? "语气保持更贴近原风格，少一点外显包装。"
@@ -217,9 +383,9 @@ async function generatePlan() {
       sampleCount: state.sampleCount,
       mode,
       styleProfile: {
-        persona: $("#personaText").value.trim(),
-        structure: $("#structureText").value.trim(),
-        upgrade: $("#upgradeText").value.trim(),
+        persona: styleProfile.persona,
+        structure: styleProfile.structure,
+        upgrade: styleProfile.upgrade,
       },
       topic,
     });
@@ -267,7 +433,9 @@ async function generateArticle() {
     await generatePlan();
     return;
   }
-  const persona = $("#personaText").value.trim() || "判断型随笔";
+  const activeStyle = getActiveStyle();
+  const styleProfile = activeStyle || readStyleFields();
+  const persona = styleProfile.persona || "判断型随笔";
   setStatus("正在生成文章");
   setWriterProgress(true, "写作猫正在写正文");
   setButtonPending(actionButton, true, "生成中");
@@ -276,11 +444,11 @@ async function generateArticle() {
       task: "generate-article",
       samples: state.samples,
       sampleCount: state.sampleCount,
-      mode: state.chosenMode || "B",
+      mode: state.chosenMode || activeStyle?.mode || "B",
       styleProfile: {
-        persona: $("#personaText").value.trim(),
-        structure: $("#structureText").value.trim(),
-        upgrade: $("#upgradeText").value.trim(),
+        persona: styleProfile.persona,
+        structure: styleProfile.structure,
+        upgrade: styleProfile.upgrade,
       },
       topic: $("#topicInput").value.trim(),
       plan: state.plan,
@@ -413,9 +581,19 @@ $("#trialGrid").addEventListener("click", (event) => {
   const button = event.target.closest("[data-mode]");
   if (button) selectMode(button.dataset.mode);
 });
+$("#styleSelect").addEventListener("change", (event) => selectStyle(event.target.value));
+$("#planStyleSelect").addEventListener("change", (event) => selectStyle(event.target.value));
+$("#newStyleBtn").addEventListener("click", createBlankStyle);
+$("#deleteStyleBtn").addEventListener("click", deleteActiveStyle);
 $("#saveProfileBtn").addEventListener("click", () => {
   state.profileSaved = true;
-  setStatus("风格画像已保存");
+  saveCurrentStyle();
+});
+$("#useStyleBtn").addEventListener("click", () => {
+  if (!state.activeStyleId) {
+    setStatus("请先选择或保存一个风格");
+    return;
+  }
   switchPanel("panel-plan");
 });
 $("#planBtn").addEventListener("click", generatePlan);
@@ -425,4 +603,12 @@ $("#copyTextBtn").addEventListener("click", () => copyText(false));
 $$(".chip").forEach((chip) => chip.addEventListener("click", () => rewriteArticle(chip.dataset.rewrite)));
 $$(".rail-item").forEach((item) => item.addEventListener("click", () => switchPanel(item.dataset.target)));
 
+loadStyleLibrary();
+if (state.activeStyleId) {
+  selectStyle(state.activeStyleId);
+  setStatus("已载入风格，可以直接给主题");
+  switchPanel("panel-plan");
+} else {
+  renderStyleLibrary();
+}
 renderTrials();

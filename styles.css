@@ -65,6 +65,8 @@ a {
 }
 
 button,
+input,
+select,
 textarea {
   font: inherit;
 }
@@ -609,6 +611,8 @@ h3 {
 }
 
 .textarea,
+.text-input,
+.select,
 .article-editor {
   width: 100%;
   border: 1px solid var(--color-border-default);
@@ -624,13 +628,54 @@ h3 {
 }
 
 .textarea:hover,
+.text-input:hover,
+.select:hover,
 .article-editor:hover {
   border-color: #c9c9c9;
 }
 
 .textarea:focus,
+.text-input:focus,
+.select:focus,
 .article-editor:focus {
   border-color: var(--color-border-strong);
+}
+
+.text-input,
+.select {
+  min-height: 42px;
+  padding: 0 var(--space-4);
+  color: var(--color-text-primary);
+}
+
+.select {
+  cursor: pointer;
+}
+
+.style-library-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: var(--space-3);
+  align-items: end;
+  margin-bottom: var(--space-5);
+}
+
+.profile-name-field {
+  margin-bottom: var(--space-5);
+}
+
+.current-style-card {
+  display: grid;
+  grid-template-columns: minmax(0, 320px) 1fr;
+  gap: var(--space-5);
+  align-items: end;
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.current-style-card .helper {
+  margin: 0 0 var(--space-2);
 }
 
 .textarea.tall {
@@ -772,6 +817,8 @@ h3 {
   .steps,
   .trial-grid,
   .profile-grid,
+  .style-library-bar,
+  .current-style-card,
   .edit-groups {
     grid-template-columns: 1fr;
   }

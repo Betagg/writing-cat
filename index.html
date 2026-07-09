@@ -83,7 +83,7 @@
               <span>2</span>试写校准
             </button>
             <button class="rail-item" data-target="panel-profile">
-              <span>3</span>风格画像
+              <span>3</span>风格库
             </button>
             <button class="rail-item" data-target="panel-plan">
               <span>4</span>写作方案
@@ -133,10 +133,26 @@
               <div class="panel-heading">
                 <div>
                   <p class="eyebrow">Step 3</p>
-                  <h3 id="profile-title">风格画像</h3>
+                  <h3 id="profile-title">风格库</h3>
                 </div>
-                <span class="counter" id="selectedMode">未选择方向</span>
+                <span class="counter" id="styleCount">0 个风格</span>
               </div>
+              <div class="style-library-bar">
+                <label class="field-label" for="styleSelect">
+                  已保存风格
+                  <select class="select" id="styleSelect"></select>
+                </label>
+                <button class="button button-secondary" id="newStyleBtn">新建风格</button>
+                <button class="button button-secondary" id="deleteStyleBtn">删除风格</button>
+              </div>
+              <label class="field-label profile-name-field" for="profileNameInput">
+                风格名称
+                <input
+                  class="text-input"
+                  id="profileNameInput"
+                  placeholder="例如：贝塔公众号风格、商业分析风格"
+                />
+              </label>
               <div class="profile-grid">
                 <label class="field-label">
                   写作人格
@@ -152,7 +168,8 @@
                 </label>
               </div>
               <div class="panel-actions">
-                <button class="button button-primary" id="saveProfileBtn">保存这个风格</button>
+                <button class="button button-primary" id="saveProfileBtn">保存到风格库</button>
+                <button class="button button-secondary" id="useStyleBtn">用这个风格写文章</button>
               </div>
             </section>
 
@@ -162,6 +179,13 @@
                   <p class="eyebrow">Step 4</p>
                   <h3 id="plan-title">给一个主题或材料，先生成写作方案</h3>
                 </div>
+              </div>
+              <div class="current-style-card">
+                <label class="field-label" for="planStyleSelect">
+                  当前写作风格
+                  <select class="select" id="planStyleSelect"></select>
+                </label>
+                <p class="helper" id="styleHint">首次使用需要先校准并保存一个风格。</p>
               </div>
               <label class="field-label" for="topicInput">主题 / 材料</label>
               <textarea
@@ -215,8 +239,8 @@
         <div class="steps">
           <article>
             <span>01</span>
-            <h3>输入历史文章</h3>
-            <p>粘贴 3-10 篇旧文章。</p>
+            <h3>首次校准</h3>
+            <p>粘贴几篇旧文章。</p>
           </article>
           <article>
             <span>02</span>
@@ -225,13 +249,13 @@
           </article>
           <article>
             <span>03</span>
-            <h3>确认风格画像</h3>
-            <p>保留你的表达习惯。</p>
+            <h3>保存风格库</h3>
+            <p>后续可选择和编辑。</p>
           </article>
           <article>
             <span>04</span>
-            <h3>先出方案再写稿</h3>
-            <p>确认结构后生成文章。</p>
+            <h3>直接给主题</h3>
+            <p>选好风格就能开写。</p>
           </article>
         </div>
       </section>
