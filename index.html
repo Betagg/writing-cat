@@ -198,20 +198,23 @@
                 <button class="button button-secondary" id="articleBtn">风格没问题，写完整文章</button>
               </div>
               <article class="preview-card" id="previewCard" aria-live="polite"></article>
-              <div class="edit-groups">
-                <div>
-                  <p class="mini-title">更像我</p>
-                  <button class="chip" data-rewrite="less-ai">少一点 AI 味</button>
-                  <button class="chip" data-rewrite="calmer">结尾更克制</button>
-                  <button class="chip" data-rewrite="judgment">多一点个人判断</button>
+              <details class="rewrite-disclosure">
+                <summary>需要微调文章</summary>
+                <div class="edit-groups">
+                  <div>
+                    <p class="mini-title">更像我</p>
+                    <button class="chip" data-rewrite="less-ai">少一点 AI 味</button>
+                    <button class="chip" data-rewrite="calmer">结尾更克制</button>
+                    <button class="chip" data-rewrite="judgment">多一点个人判断</button>
+                  </div>
+                  <div>
+                    <p class="mini-title">写得更好</p>
+                    <button class="chip" data-rewrite="title">标题更强</button>
+                    <button class="chip" data-rewrite="structure">结构更清楚</button>
+                    <button class="chip" data-rewrite="shorten">压缩篇幅</button>
+                  </div>
                 </div>
-                <div>
-                  <p class="mini-title">写得更好</p>
-                  <button class="chip" data-rewrite="title">标题更强</button>
-                  <button class="chip" data-rewrite="structure">结构更清楚</button>
-                  <button class="chip" data-rewrite="shorten">压缩篇幅</button>
-                </div>
-              </div>
+              </details>
               <textarea class="article-editor" id="articleOutput" placeholder="确认试写片段后，完整文章会出现在这里。"></textarea>
               <div class="panel-actions">
                 <button class="button button-secondary" id="copyMdBtn">复制 Markdown</button>
