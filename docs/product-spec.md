@@ -109,7 +109,7 @@ Logo must not 走卡通幼教风、表情包风、宠物 App 风。
 - 编辑风格名称、写作人格、结构习惯、质量提升方向
 - 保存修改
 - 删除不再使用的风格
-- 在写作方案页直接切换当前风格
+- 在试写成稿页直接切换当前风格
 
 后续用户打开产品时，系统 should 自动载入上次使用的风格，并优先引导用户直接输入主题或材料。
 
@@ -118,7 +118,7 @@ Logo must not 走卡通幼教风、表情包风、宠物 App 风。
 > 我会保留你的判断型表达和编号结构，但在正式写作时，会比原文更强调段落收束和读者阅读节奏。  
 > 目标不是完全复刻，而是生成“更清晰的你”。
 
-### Step 4：选择风格，输入主题或材料
+### Step 4：选择风格，输入主题或材料，先试写再成稿
 
 用户输入：
 
@@ -127,22 +127,18 @@ Logo must not 走卡通幼教风、表情包风、宠物 App 风。
 - 一篇参考文章
 - 一组零散观点
 
-写作猫 must 先生成写作方案，而不是直接生成文章。
+写作猫 must 先生成一段试写片段，而不是直接生成完整文章。
 
 如果用户已经保存过风格，写作猫 must 允许用户跳过历史文章输入与试写校准，直接从当前风格和新主题开始。
 
-写作方案 must 包括：
+试写片段 must：
 
-- 核心判断
-- 文章标题方向
-- 结构大纲
-- 案例使用方式
-- 语气策略
-- 预估篇幅
+- 直接写成正文片段，而不是写作方案。
+- 让用户能判断“这个味道对不对”。
+- 控制在 400-600 字左右。
+- 保留用户风格影子，同时展示更好的结构和表达。
 
-### Step 5：生成文章并编辑
-
-用户确认写作方案后，写作猫生成完整公众号文章。
+用户确认试写片段后，写作猫生成完整公众号文章。
 
 文章生成后，用户 should 能通过快捷指令继续修改。
 
@@ -316,16 +312,16 @@ motion.duration.instant = 300ms
 - It must avoid空泛评价，比如“你的文章很高级”。
 - It should explain why 写作猫 made a style judgment.
 
-### Writing Plan Card
+### Preview Draft Card
 
-正式写作前的方案确认。
+正式写作前的风格确认。
 
 **Rules：**
 
-- 写作猫 must generate plan before article.
-- User must be able to edit or regenerate plan.
-- Plan must not exceed one screen on desktop by default.
-- Long plan should collapse into sections.
+- 写作猫 must generate a preview draft before the full article.
+- Preview draft must be正文片段, not outline or plan.
+- User must be able to regenerate preview draft.
+- Full article generation should happen in the same step after preview confirmation.
 
 ### Article Editor
 
@@ -407,7 +403,7 @@ motion.duration.instant = 300ms
 - Do not skip style trial writing.
 - Do not only output abstract style labels.
 - Do not overfit口癖 while ignoring judgment and structure.
-- Do not generate final article before user confirms writing plan.
+- Do not generate final article before user confirms preview draft style.
 - Do not make UI look like a complex CMS.
 - Do not use vague buttons like “优化一下”。
 - Do not hide why the product made a style judgment.
@@ -433,8 +429,8 @@ motion.duration.instant = 300ms
 - [ ] 用户能选择或重新生成样例。
 - [ ] 系统能基于选择更新风格画像。
 - [ ] 用户能输入新主题或材料。
-- [ ] 系统先生成写作方案。
-- [ ] 用户确认后生成完整文章。
+- [ ] 系统先生成一段试写片段。
+- [ ] 用户确认试写风格后生成完整文章。
 - [ ] 文章保留用户风格影子。
 - [ ] 文章比原始材料更清楚、更完整。
 - [ ] Logo 在 24px、32px、48px 下可识别。

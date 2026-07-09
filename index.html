@@ -87,10 +87,7 @@
               <span>3</span>风格库
             </button>
             <button class="rail-item" data-target="panel-plan">
-              <span>4</span>写作方案
-            </button>
-            <button class="rail-item" data-target="panel-article">
-              <span>5</span>最终文章
+              <span>4</span>试写成稿
             </button>
           </aside>
 
@@ -178,7 +175,7 @@
               <div class="panel-heading">
                 <div>
                   <p class="eyebrow">Step 4</p>
-                  <h3 id="plan-title">给一个主题或材料，先生成写作方案</h3>
+                  <h3 id="plan-title">先试写一段，确认风格后再写完整文章</h3>
                 </div>
               </div>
               <div class="current-style-card">
@@ -195,19 +192,10 @@
                 placeholder="例如：根据这些内容写一篇《出海做视频还有机会吗？》，面向想做内容赚钱成名的人。"
               ></textarea>
               <div class="panel-actions">
-                <button class="button button-primary" id="planBtn">生成写作方案</button>
+                <button class="button button-primary" id="previewBtn">生成试写片段</button>
+                <button class="button button-secondary" id="articleBtn">风格没问题，写完整文章</button>
               </div>
-              <article class="plan-card" id="planCard" aria-live="polite"></article>
-            </section>
-
-            <section class="panel" id="panel-article" tabindex="0" aria-labelledby="article-title">
-              <div class="panel-heading">
-                <div>
-                  <p class="eyebrow">Step 5</p>
-                  <h3 id="article-title">生成文章并继续编辑</h3>
-                </div>
-                <button class="button button-primary" id="articleBtn">生成文章</button>
-              </div>
+              <article class="preview-card" id="previewCard" aria-live="polite"></article>
               <div class="edit-groups">
                 <div>
                   <p class="mini-title">更像我</p>
@@ -222,7 +210,7 @@
                   <button class="chip" data-rewrite="shorten">压缩篇幅</button>
                 </div>
               </div>
-              <textarea class="article-editor" id="articleOutput" placeholder="确认写作方案后，文章会出现在这里。"></textarea>
+              <textarea class="article-editor" id="articleOutput" placeholder="确认试写片段后，完整文章会出现在这里。"></textarea>
               <div class="panel-actions">
                 <button class="button button-secondary" id="copyMdBtn">复制 Markdown</button>
                 <button class="button button-secondary" id="copyTextBtn">复制纯文本</button>

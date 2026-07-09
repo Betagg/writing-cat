@@ -7,7 +7,7 @@ const state = {
   styleLibrary: [],
   activeStyleId: "",
   trials: null,
-  plan: "",
+  preview: "",
   article: "",
 };
 
@@ -180,6 +180,14 @@ function renderStyleLibrary() {
   $("#deleteStyleBtn").disabled = !state.activeStyleId;
   $("#useStyleBtn").disabled = !state.activeStyleId;
   updateStyleHint();
+}
+
+function resetDraftForNewTopic() {
+  state.preview = "";
+  state.article = "";
+  $("#previewCard").textContent = "";
+  $("#articleOutput").value = "";
+  $("#articleBtn").disabled = true;
 }
 
 function selectStyle(styleId) {
@@ -388,8 +396,8 @@ async function analyzeSamples() {
   switchPanel("panel-trials");
 }
 
-async function generatePlan() {
-  const actionButton = $("#planBtn");
+async function generatePreview() {
+  const actionButton = $("#previewBtn");
   if (actionButton.disabled) return;
   const topic = $("#topicInput").value.trim();
   if (!topic) {
@@ -400,18 +408,17 @@ async function generatePlan() {
   const activeStyle = getActiveStyle();
   const mode = state.chosenMode || activeStyle?.mode || "B";
   const styleProfile = activeStyle || readStyleFields();
-  const styleLine =
-    mode === "A"
-      ? "语气保持更贴近原风格，少一点外显包装。"
-      : mode === "C"
-      ? "开头和标题更有抓力，但避免营销号。"
-      : "整体偏清晰增强，像你，但更顺。";
-  setStatus("正在生成写作方案");
-  setWriterProgress(true, "写作猫正在铺文章结构");
-  setButtonPending(actionButton, true, "生成中");
+  state.preview = "";
+  state.article = "";
+  $("#previewCard").textContent = "";
+  $("#articleOutput").value = "";
+  $("#articleBtn").disabled = true;
+  setStatus("正在生成试写片段");
+  setWriterProgress(true, "写作猫正在试写一段");
+  setButtonPending(actionButton, true, "试写中");
   try {
     const data = await callWritingApi({
-      task: "generate-plan",
+      task: "generate-preview",
       samples: state.samples,
       sampleCount: state.sampleCount,
       mode,
@@ -423,40 +430,33 @@ async function generatePlan() {
       topic,
     });
     if (data.text) {
-      state.plan = data.text;
-      $("#planCard").textContent = state.plan;
-      setStatus("写作方案已生成，确认后可以出稿");
+      state.preview = data.text;
+      $("#previewCard").textContent = state.preview;
+      $("#articleBtn").disabled = false;
+      setStatus("试写片段已生成，确认风格后可以写完整文章");
       setWriterProgress(false);
       playTaskCompleteSound();
       switchPanel("panel-plan");
       return;
     }
   } catch {
-    setStatus("API 暂未配置，已使用本地示例生成方案");
+    setStatus("API 暂未配置，已使用本地示例生成试写片段");
   } finally {
     setWriterProgress(false);
     setButtonPending(actionButton, false);
   }
-  state.plan = `核心判断：
-这篇不写成资料汇总，而写成一个判断：机会仍然存在，但粗糙红利过去了，真正的机会来自更大的视频媒介迁移、更精准的人群服务和 AI 降低生产门槛。
+  state.preview = `出海做视频还有机会吗？
 
-标题方向：
-《出海做视频还有机会吗？》
+当然还有。
 
-结构大纲：
-1、先回答“当然还有”，但把低质量搬运红利排除掉。
-2、解释为什么视频仍然是足够大的内容赛道。
-3、讲海外华人和细分人群的内容需求。
-4、用案例说明不同赛道的收入差异。
-5、回到普通人怎么做：选赛道、锚定优势、用 AI 提效。
+但这个机会，已经不是“随便搬几条视频，换个语言，发到 YouTube 或 TikTok 就能赚钱”的机会了。那种粗糙红利，基本已经过去。
 
-语气策略：
-${styleLine}
+真正还在的机会，是更底层的：视频正在成为当代人获取信息、娱乐、学习和消费决策的核心形式。以前人读文章、看图文、逛论坛，现在越来越多时间被视频吃掉。短视频解决即时刺激，长视频解决深度理解，直播解决互动和交易。
 
-预估篇幅：
-1500-2000 字。`;
-  $("#planCard").textContent = state.plan;
-  setStatus("写作方案已生成，确认后可以出稿");
+这么大的媒介迁移里，不可能只有头部玩家有机会。只要人还需要学习、娱乐、购买、陪伴、认同和信任，视频内容就会不断出现新位置。`;
+  $("#previewCard").textContent = state.preview;
+  $("#articleBtn").disabled = false;
+  setStatus("试写片段已生成，确认风格后可以写完整文章");
   playTaskCompleteSound();
   switchPanel("panel-plan");
 }
@@ -464,8 +464,8 @@ ${styleLine}
 async function generateArticle() {
   const actionButton = $("#articleBtn");
   if (actionButton.disabled) return;
-  if (!state.plan) {
-    await generatePlan();
+  if (!state.preview) {
+    await generatePreview();
     return;
   }
   const activeStyle = getActiveStyle();
@@ -486,7 +486,7 @@ async function generateArticle() {
         upgrade: styleProfile.upgrade,
       },
       topic: $("#topicInput").value.trim(),
-      plan: state.plan,
+      preview: state.preview,
     });
     if (data.text) {
       state.article = data.text;
@@ -494,7 +494,7 @@ async function generateArticle() {
       setStatus("文章已生成，可以继续微调");
       setWriterProgress(false);
       playTaskCompleteSound();
-      switchPanel("panel-article");
+      switchPanel("panel-plan");
       return;
     }
   } catch {
@@ -567,7 +567,7 @@ YouTube 和 TikTok 的规则都在收紧。纯 AI 生成、缺少人工创意介
   $("#articleOutput").value = state.article;
   setStatus("文章已生成，可以继续微调");
   playTaskCompleteSound();
-  switchPanel("panel-article");
+  switchPanel("panel-plan");
 }
 
 function rewriteArticle(type) {
@@ -606,6 +606,7 @@ async function copyText(markdown = true) {
 document.addEventListener("pointerdown", primeTaskCompleteSound, { once: true });
 document.addEventListener("keydown", primeTaskCompleteSound, { once: true });
 $("#sampleInput").addEventListener("input", updateSampleCounter);
+$("#topicInput").addEventListener("input", resetDraftForNewTopic);
 $("#analyzeBtn").addEventListener("click", analyzeSamples);
 $("#loadDemoBtn").addEventListener("click", () => {
   $("#sampleInput").value = demoSamples;
@@ -635,7 +636,7 @@ $("#useStyleBtn").addEventListener("click", () => {
   }
   switchPanel("panel-plan");
 });
-$("#planBtn").addEventListener("click", generatePlan);
+$("#previewBtn").addEventListener("click", generatePreview);
 $("#articleBtn").addEventListener("click", generateArticle);
 $("#copyMdBtn").addEventListener("click", () => copyText(true));
 $("#copyTextBtn").addEventListener("click", () => copyText(false));
@@ -650,4 +651,5 @@ if (state.activeStyleId) {
 } else {
   renderStyleLibrary();
 }
+$("#articleBtn").disabled = true;
 renderTrials();
