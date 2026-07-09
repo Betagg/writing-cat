@@ -6,6 +6,7 @@ const state = {
   styleProfile: null,
   styleLibrary: [],
   activeStyleId: "",
+  articleHistory: [],
   trials: null,
   preview: "",
   article: "",
@@ -13,6 +14,7 @@ const state = {
 
 const STYLE_LIBRARY_KEY = "writing-cat-style-library";
 const ACTIVE_STYLE_KEY = "writing-cat-active-style";
+const ARTICLE_HISTORY_KEY = "writing-cat-article-history";
 let soundPrimed = false;
 
 const demoSamples = `Coding 的本质不是写代码，而是人在数字世界中的创造活动。Coding agent 这个词可能迷惑了很多人，它让人觉得这只是帮人类写代码的工具，但实际上，它更像是一个通用创造工具。
@@ -108,6 +110,10 @@ function createStyleId() {
   return `style-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function createArticleId() {
+  return `article-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 function readStyleFields() {
   return {
     name: $("#profileNameInput").value.trim(),
@@ -142,6 +148,21 @@ function loadStyleLibrary() {
     state.styleLibrary = [];
     state.activeStyleId = "";
   }
+}
+
+function loadArticleHistory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(ARTICLE_HISTORY_KEY) || "[]");
+    state.articleHistory = Array.isArray(saved)
+      ? saved.filter((article) => article && article.id && article.body).slice(0, 80)
+      : [];
+  } catch {
+    state.articleHistory = [];
+  }
+}
+
+function persistArticleHistory() {
+  localStorage.setItem(ARTICLE_HISTORY_KEY, JSON.stringify(state.articleHistory));
 }
 
 function persistStyleLibrary() {
@@ -188,6 +209,112 @@ function resetDraftForNewTopic() {
   $("#previewCard").textContent = "";
   $("#articleOutput").value = "";
   $("#articleBtn").disabled = true;
+}
+
+function getArticleTitle(text, topic) {
+  const firstLine = text
+    .split("\n")
+    .map((line) => line.replace(/^#+\s*/, "").trim())
+    .find(Boolean);
+  if (firstLine) return firstLine.slice(0, 44);
+  return (topic || "未命名文章").slice(0, 44);
+}
+
+function formatDateTime(value) {
+  try {
+    return new Intl.DateTimeFormat("zh-CN", {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(value));
+  } catch {
+    return "";
+  }
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function renderArticleHistory() {
+  const list = $("#historyList");
+  if (!list) return;
+  $("#historyCount").textContent = `${state.articleHistory.length} 篇文章`;
+  if (state.articleHistory.length === 0) {
+    list.innerHTML = '<p class="empty-state">还没有历史文章。生成完整文章后，会自动出现在这里。</p>';
+    return;
+  }
+  list.innerHTML = "";
+  state.articleHistory.forEach((article) => {
+    const item = document.createElement("article");
+    item.className = "history-item";
+    const articleId = escapeHtml(article.id);
+    const createdAt = escapeHtml(formatDateTime(article.createdAt));
+    const styleName = escapeHtml(article.styleName || "未命名风格");
+    const title = escapeHtml(article.title || "未命名文章");
+    const excerpt = escapeHtml((article.topic || article.body || "").slice(0, 120));
+    item.innerHTML = `
+      <div class="history-item-main">
+        <div class="history-meta">
+          <span>${createdAt}</span>
+          <span>${styleName}</span>
+        </div>
+        <h4>${title}</h4>
+        <p>${excerpt}</p>
+      </div>
+      <div class="history-actions">
+        <button class="button button-secondary" data-open-article="${articleId}">打开</button>
+        <button class="button button-secondary" data-delete-article="${articleId}">删除</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function saveArticleToHistory() {
+  const body = state.article.trim();
+  if (!body) return;
+  const activeStyle = getActiveStyle();
+  const topic = $("#topicInput").value.trim();
+  const article = {
+    id: createArticleId(),
+    title: getArticleTitle(body, topic),
+    topic,
+    preview: state.preview,
+    body,
+    styleId: activeStyle?.id || "",
+    styleName: activeStyle?.name || readStyleFields().name || "当前风格",
+    createdAt: new Date().toISOString(),
+  };
+  state.articleHistory = [article, ...state.articleHistory].slice(0, 80);
+  persistArticleHistory();
+  renderArticleHistory();
+}
+
+function openHistoryArticle(id) {
+  const article = state.articleHistory.find((item) => item.id === id);
+  if (!article) return;
+  $("#topicInput").value = article.topic || "";
+  state.preview = article.preview || "";
+  state.article = article.body || "";
+  $("#previewCard").textContent = state.preview;
+  $("#articleOutput").value = state.article;
+  $("#articleBtn").disabled = !state.preview;
+  setStatus("已打开历史文章");
+  switchPanel("panel-plan");
+}
+
+function deleteHistoryArticle(id) {
+  state.articleHistory = state.articleHistory.filter((article) => article.id !== id);
+  persistArticleHistory();
+  renderArticleHistory();
+  setStatus("已删除历史文章");
 }
 
 function selectStyle(styleId) {
@@ -491,6 +618,7 @@ async function generateArticle() {
     if (data.text) {
       state.article = data.text;
       $("#articleOutput").value = state.article;
+      saveArticleToHistory();
       setStatus("文章已生成，可以继续微调");
       setWriterProgress(false);
       playTaskCompleteSound();
@@ -565,6 +693,7 @@ YouTube 和 TikTok 的规则都在收紧。纯 AI 生成、缺少人工创意介
 
 <!-- 风格依据：${persona} -->`;
   $("#articleOutput").value = state.article;
+  saveArticleToHistory();
   setStatus("文章已生成，可以继续微调");
   playTaskCompleteSound();
   switchPanel("panel-plan");
@@ -640,10 +769,17 @@ $("#previewBtn").addEventListener("click", generatePreview);
 $("#articleBtn").addEventListener("click", generateArticle);
 $("#copyMdBtn").addEventListener("click", () => copyText(true));
 $("#copyTextBtn").addEventListener("click", () => copyText(false));
+$("#historyList").addEventListener("click", (event) => {
+  const openButton = event.target.closest("[data-open-article]");
+  const deleteButton = event.target.closest("[data-delete-article]");
+  if (openButton) openHistoryArticle(openButton.dataset.openArticle);
+  if (deleteButton) deleteHistoryArticle(deleteButton.dataset.deleteArticle);
+});
 $$(".chip").forEach((chip) => chip.addEventListener("click", () => rewriteArticle(chip.dataset.rewrite)));
 $$(".rail-item").forEach((item) => item.addEventListener("click", () => switchPanel(item.dataset.target)));
 
 loadStyleLibrary();
+loadArticleHistory();
 if (state.activeStyleId) {
   selectStyle(state.activeStyleId);
   setStatus("已载入风格，可以直接给主题");
@@ -651,5 +787,6 @@ if (state.activeStyleId) {
 } else {
   renderStyleLibrary();
 }
+renderArticleHistory();
 $("#articleBtn").disabled = true;
 renderTrials();

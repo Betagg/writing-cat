@@ -88,6 +88,9 @@
             <button class="rail-item" data-target="panel-plan">
               <span>4</span>试写成稿
             </button>
+            <button class="rail-item" data-target="panel-history">
+              <span>5</span>文章库
+            </button>
           </aside>
 
           <div class="panels">
@@ -214,6 +217,20 @@
                 <button class="button button-secondary" id="copyMdBtn">复制 Markdown</button>
                 <button class="button button-secondary" id="copyTextBtn">复制纯文本</button>
               </div>
+            </section>
+
+            <section class="panel" id="panel-history" tabindex="0" aria-labelledby="history-title">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Library</p>
+                  <h3 id="history-title">历史文章</h3>
+                </div>
+                <span class="counter" id="historyCount">0 篇文章</span>
+              </div>
+              <p class="helper history-helper">
+                完整文章生成后会自动保存到这里，之后可以随时打开、复制或继续编辑。
+              </p>
+              <div class="history-list" id="historyList" aria-live="polite"></div>
             </section>
           </div>
         </div>

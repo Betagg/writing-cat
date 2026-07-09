@@ -141,6 +141,7 @@ Logo must not 走卡通幼教风、表情包风、宠物 App 风。
 用户确认试写片段后，写作猫生成完整公众号文章。
 
 文章生成后，用户 should 能通过快捷指令继续修改。
+完整文章生成后，系统 must 自动保存到文章库，方便用户之后找回。
 
 编辑指令分为两组：
 
@@ -160,6 +161,19 @@ Logo must not 走卡通幼教风、表情包风、宠物 App 风。
 - 案例更有说服力
 - 压缩篇幅
 - 更适合公众号阅读
+
+### Step 5：文章库
+
+文章库 must 集中展示用户历史生成的完整文章。
+
+文章库 should 支持：
+
+- 自动保存每次生成完成的完整文章
+- 展示文章标题、生成时间、使用风格和主题摘要
+- 打开历史文章并回到编辑器继续编辑
+- 删除不再需要的历史文章
+
+V1 文章库 can 使用浏览器本地存储，不需要账号系统。
 
 ## 3. Design Tokens and Foundations
 
@@ -333,6 +347,16 @@ motion.duration.instant = 300ms
 - Empty state must clearly tell user下一步做什么。
 - Loading state must prevent duplicate generation.
 
+### Article History
+
+**Rules：**
+
+- Full article generation must create a history entry automatically.
+- History item must preserve article body, topic, style name, preview snippet, and created time.
+- User must be able to reopen a historical article into the editor.
+- User must be able to delete a historical article.
+- Empty state must explain that generated articles will appear here.
+
 ### Completion Feedback
 
 任务完成后，写作猫 should 给出轻量提示，降低用户等待后的不确定感。
@@ -431,6 +455,9 @@ motion.duration.instant = 300ms
 - [ ] 用户能输入新主题或材料。
 - [ ] 系统先生成一段试写片段。
 - [ ] 用户确认试写风格后生成完整文章。
+- [ ] 完整文章会自动保存到文章库。
+- [ ] 用户能从文章库打开历史文章。
+- [ ] 用户能删除历史文章。
 - [ ] 文章保留用户风格影子。
 - [ ] 文章比原始材料更清楚、更完整。
 - [ ] Logo 在 24px、32px、48px 下可识别。
