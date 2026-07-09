@@ -204,6 +204,11 @@ h3 {
   border-color: var(--color-border-default);
 }
 
+.button:disabled:hover {
+  transform: none;
+  background: var(--color-action-secondary);
+}
+
 .button-primary {
   background: var(--color-action-primary);
   color: var(--color-action-primary-text);

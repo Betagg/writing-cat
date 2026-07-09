@@ -60,6 +60,14 @@ function setWriterProgress(isActive, label = "写作猫正在写") {
   progress.setAttribute("aria-hidden", isActive ? "false" : "true");
 }
 
+function setButtonPending(button, isPending, pendingText) {
+  if (!button) return;
+  if (!button.dataset.idleText) button.dataset.idleText = button.textContent;
+  button.disabled = isPending;
+  button.textContent = isPending ? pendingText : button.dataset.idleText;
+  button.setAttribute("aria-busy", isPending ? "true" : "false");
+}
+
 async function callWritingApi(payload) {
   const response = await fetch("/api/generate", {
     method: "POST",
@@ -149,6 +157,8 @@ function selectMode(mode) {
 }
 
 async function analyzeSamples() {
+  const actionButton = $("#analyzeBtn");
+  if (actionButton.disabled) return;
   updateSampleCounter();
   if (state.sampleCount < 3) {
     $("#sampleHelp").textContent = "至少需要 3 篇样本文章。可以先点“填入示例”体验完整流程。";
@@ -157,6 +167,7 @@ async function analyzeSamples() {
   }
   setStatus("正在分析风格并生成试写样例");
   setWriterProgress(true, "写作猫正在拆你的风格");
+  setButtonPending(actionButton, true, "分析中");
   try {
     const data = await callWritingApi({
       task: "generate-trials",
@@ -172,6 +183,7 @@ async function analyzeSamples() {
     $("#sampleHelp").textContent = "API 暂未配置，已使用本地示例继续体验完整流程。";
   } finally {
     setWriterProgress(false);
+    setButtonPending(actionButton, false);
   }
   $("#sampleHelp").style.color = "var(--color-text-secondary)";
   renderTrials();
@@ -180,6 +192,8 @@ async function analyzeSamples() {
 }
 
 async function generatePlan() {
+  const actionButton = $("#planBtn");
+  if (actionButton.disabled) return;
   const topic = $("#topicInput").value.trim();
   if (!topic) {
     setStatus("请先输入主题或材料");
@@ -195,6 +209,7 @@ async function generatePlan() {
       : "整体偏清晰增强，像你，但更顺。";
   setStatus("正在生成写作方案");
   setWriterProgress(true, "写作猫正在铺文章结构");
+  setButtonPending(actionButton, true, "生成中");
   try {
     const data = await callWritingApi({
       task: "generate-plan",
@@ -220,6 +235,7 @@ async function generatePlan() {
     setStatus("API 暂未配置，已使用本地示例生成方案");
   } finally {
     setWriterProgress(false);
+    setButtonPending(actionButton, false);
   }
   state.plan = `核心判断：
 这篇不写成资料汇总，而写成一个判断：机会仍然存在，但粗糙红利过去了，真正的机会来自更大的视频媒介迁移、更精准的人群服务和 AI 降低生产门槛。
@@ -245,6 +261,8 @@ ${styleLine}
 }
 
 async function generateArticle() {
+  const actionButton = $("#articleBtn");
+  if (actionButton.disabled) return;
   if (!state.plan) {
     await generatePlan();
     return;
@@ -252,6 +270,7 @@ async function generateArticle() {
   const persona = $("#personaText").value.trim() || "判断型随笔";
   setStatus("正在生成文章");
   setWriterProgress(true, "写作猫正在写正文");
+  setButtonPending(actionButton, true, "生成中");
   try {
     const data = await callWritingApi({
       task: "generate-article",
@@ -278,6 +297,7 @@ async function generateArticle() {
     setStatus("API 暂未配置，已使用本地示例生成文章");
   } finally {
     setWriterProgress(false);
+    setButtonPending(actionButton, false);
   }
   state.article = `# 出海做视频还有机会吗？
 
