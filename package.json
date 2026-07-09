@@ -5,7 +5,7 @@
   "description": "写作猫：学习用户写作风格，并生成公众号文章的网页产品原型。",
   "scripts": {
     "dev": "python3 -m http.server 5173",
-    "build": "mkdir -p public && cp -R index.html styles.css app.js assets docs public/",
+    "build": "mkdir -p public && cp -R index.html styles.css app.js assets public/",
     "deploy": "vercel --prod"
   }
 }
